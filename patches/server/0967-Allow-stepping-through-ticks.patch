@@ -1,0 +1,223 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Adam Chen <encodeous7@gmail.com>
+Date: Mon, 13 Mar 2023 19:01:52 -0400
+Subject: [PATCH] Allow stepping through ticks
+
+
+diff --git a/src/main/java/io/papermc/paper/command/PaperCommands.java b/src/main/java/io/papermc/paper/command/PaperCommands.java
+index bbb8b1933ef33a3b91f69545f69dd3cfb84b27f5..91e2ebd2f69b45ece7a09988bf4759bf7945db67 100644
+--- a/src/main/java/io/papermc/paper/command/PaperCommands.java
++++ b/src/main/java/io/papermc/paper/command/PaperCommands.java
+@@ -18,6 +18,7 @@ public final class PaperCommands {
+     static {
+         COMMANDS.put("paper", new PaperCommand("paper"));
+         COMMANDS.put("mspt", new MSPTCommand("mspt"));
++        COMMANDS.put("stps", new StpsCommand("stps"));
+     }
+ 
+     public static void registerCommands(final MinecraftServer server) {
+diff --git a/src/main/java/io/papermc/paper/command/StpsCommand.java b/src/main/java/io/papermc/paper/command/StpsCommand.java
+index aa1358377334e76ce6bf8e30995540e1a3335524..b90ae267f41e76f2c770bcdd65d61e96981be44c 100644
+--- a/src/main/java/io/papermc/paper/command/StpsCommand.java
++++ b/src/main/java/io/papermc/paper/command/StpsCommand.java
+@@ -38,6 +38,26 @@ public final class StpsCommand extends Command {
+     public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+         if (!testPermission(sender)) return true;
+ 
++        try{
++            if(args.length == 2){
++                if(args[0].equals("add")){
++                    if(!MinecraftServer.pauseGame){
++                        sender.sendMessage("The server is not in a paused state.");
++                        return true;
++                    }
++                    MinecraftServer.ticksRemaining += Integer.parseInt(args[1]);
++                    sender.sendMessage("Added " + Integer.parseInt(args[1]) + " tick(s), total: " + MinecraftServer.ticksRemaining + " in queue.");
++                    return true;
++                }else{
++                    sender.sendMessage("Expected 1 int argument after \"add\" for ticks incremented");
++                    return true;
++                }
++            }
++        }catch (Exception e){
++            sender.sendMessage("Expected 1 int argument after \"add\" for ticks incremented");
++            return true;
++        }
++
+         try{
+             if(args.length != 1 || Double.isNaN(Double.parseDouble(args[0]))){
+                 sender.sendMessage("Expected 1 double argument for TPS");
+@@ -57,13 +77,21 @@ public final class StpsCommand extends Command {
+             return true;
+         }
+ 
+-        MinecraftServer.setMspt((int) (1000/ntps));
++        MinecraftServer.setMspt(1000/ntps);
+         MinecraftServer server = MinecraftServer.getServer();
+-        if(MinecraftServer.TICK_TIME < server.tickTimes60s.getAverage()){
++        if(MinecraftServer.TICK_TIME < server.tickTimes60s.getAverage() * 1000000){
+             sender.sendMessage("Warning: The server may not be able to keep up with the specified TPS. The current estimate of the maximal tps is: " + (1000/server.tickTimes60s.getAverage()));
+         }
++        if(MinecraftServer.pauseGame){
++            sender.sendMessage("Snapshot mode enabled: All world/chunk ticks have been paused.");
++            sender.sendMessage("Use /stps add <ticks> to increment through ticks.");
++            MinecraftServer.ticksRemaining = 0;
++        }
++        else{
++            sender.sendMessage("TPS set to: " + MinecraftServer.TPS);
++            MinecraftServer.ticksRemaining = 0;
++        }
+ 
+-        sender.sendMessage("TPS set to: " + MinecraftServer.TPS);
+         return true;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 6fecd33dcb586e866386ed37cfdc93532c59d8e9..62b27d4a05209226294c27ba66c061bece302ca8 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -198,13 +198,23 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+ 
+     // PaperTime Start
+     public static int ADJ_MS_PER_TICK = 50;
++    public static final int FREEZE_THRESHOLD = 5000;
++    public static boolean pauseGame = false;
++    public static int ticksRemaining = 0;
+     public static int TPS = 20;
++    public final static int NORMAL_TPS = 20;
+     public static int TICK_TIME = 1000000000 / MinecraftServer.TPS;
+-    public static void setMspt(int mspt){
++    public static void setMspt(double mspt){
++        if(mspt >= FREEZE_THRESHOLD){
++            pauseGame = true;
++            mspt = 50;
++        }else{
++            pauseGame = false;
++        }
+         if(mspt <= 0) mspt = 1;
+-        ADJ_MS_PER_TICK = mspt;
+-        TICK_TIME = mspt * 1000000;
+-        TPS = 1000 / mspt;
++        ADJ_MS_PER_TICK = Math.max((int) mspt, 1);
++        TICK_TIME = (int) (mspt * 1000000);
++        TPS = (int) (1000 / mspt);
+     }
+     private static MinecraftServer SERVER; // Paper
+     public static final Logger LOGGER = LogUtils.getLogger();
+@@ -1069,11 +1079,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         RollingAverage(int size) {
+             this.size = size;
+             this.time = size * SEC_IN_NANO;
+-            this.total = dec(TPS).multiply(dec(SEC_IN_NANO)).multiply(dec(size));
++            this.total = dec(NORMAL_TPS).multiply(dec(SEC_IN_NANO)).multiply(dec(size));
+             this.samples = new java.math.BigDecimal[size];
+             this.times = new long[size];
+             for (int i = 0; i < size; i++) {
+-                this.samples[i] = dec(TPS);
++                this.samples[i] = dec(NORMAL_TPS);
+                 this.times[i] = SEC_IN_NANO;
+             }
+         }
+@@ -1520,16 +1530,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         MinecraftTimings.timeUpdateTimer.stopTiming(); // Spigot // Paper
+ 
+         this.isIteratingOverLevels = true; // Paper
+-        Iterator iterator = this.getAllLevels().iterator(); // Paper - move down
+-        while (iterator.hasNext()) {
+-            ServerLevel worldserver = (ServerLevel) iterator.next();
+-            worldserver.hasPhysicsEvent =  org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
+-            worldserver.hasEntityMoveEvent =  io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
+-            net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = worldserver.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper
++        if(!pauseGame || MinecraftServer.ticksRemaining > 0) {
++            if(pauseGame) MinecraftServer.ticksRemaining--;
++            Iterator iterator = this.getAllLevels().iterator(); // Paper - move down
++            while (iterator.hasNext()) {
++                ServerLevel worldserver = (ServerLevel) iterator.next();
++                worldserver.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
++                worldserver.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
++                net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = worldserver.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper
+ 
+-            this.profiler.push(() -> {
+-                return worldserver + " " + worldserver.dimension().location();
+-            });
++                this.profiler.push(() -> {
++                    return worldserver + " " + worldserver.dimension().location();
++                });
+             /* Drop global time updates
+             if (this.tickCount % 20 == 0) {
+                 this.profiler.push("timeSync");
+@@ -1538,35 +1550,38 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             }
+             // CraftBukkit end */
+ 
+-            this.profiler.push("tick");
++                this.profiler.push("tick");
+ 
+-            try {
+-                worldserver.timings.doTick.startTiming(); // Spigot
+-                worldserver.tick(shouldKeepTicking);
+-                // Paper start
+-                for (final io.papermc.paper.chunk.SingleThreadChunkRegionManager regionManager : worldserver.getChunkSource().chunkMap.regionManagers) {
+-                    regionManager.recalculateRegions();
+-                }
+-                // Paper end
+-                worldserver.timings.doTick.stopTiming(); // Spigot
+-            } catch (Throwable throwable) {
+-                // Spigot Start
+-                CrashReport crashreport;
+                 try {
+-                    crashreport = CrashReport.forThrowable(throwable, "Exception ticking world");
+-                } catch (Throwable t) {
+-                    if (throwable instanceof ThreadDeath) { throw (ThreadDeath)throwable; } // Paper
+-                    throw new RuntimeException("Error generating crash report", t);
++                    worldserver.timings.doTick.startTiming(); // Spigot
++                    worldserver.tick(shouldKeepTicking);
++                    // Paper start
++                    for (final io.papermc.paper.chunk.SingleThreadChunkRegionManager regionManager : worldserver.getChunkSource().chunkMap.regionManagers) {
++                        regionManager.recalculateRegions();
++                    }
++                    // Paper end
++                    worldserver.timings.doTick.stopTiming(); // Spigot
++                } catch (Throwable throwable) {
++                    // Spigot Start
++                    CrashReport crashreport;
++                    try {
++                        crashreport = CrashReport.forThrowable(throwable, "Exception ticking world");
++                    } catch (Throwable t) {
++                        if (throwable instanceof ThreadDeath) {
++                            throw (ThreadDeath) throwable;
++                        } // Paper
++                        throw new RuntimeException("Error generating crash report", t);
++                    }
++                    // Spigot End
++
++                    worldserver.fillReportDetails(crashreport);
++                    throw new ReportedException(crashreport);
+                 }
+-                // Spigot End
+ 
+-                worldserver.fillReportDetails(crashreport);
+-                throw new ReportedException(crashreport);
++                this.profiler.pop();
++                this.profiler.pop();
++                worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
+             }
+-
+-            this.profiler.pop();
+-            this.profiler.pop();
+-            worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
+         }
+         this.isIteratingOverLevels = false; // Paper
+ 
+diff --git a/src/main/java/org/spigotmc/TicksPerSecondCommand.java b/src/main/java/org/spigotmc/TicksPerSecondCommand.java
+index 9bede6a26c08ede063c7a38f1149c811df14b258..096f00455dc413ff46eb3b04b73b38f36dbb9e3f 100644
+--- a/src/main/java/org/spigotmc/TicksPerSecondCommand.java
++++ b/src/main/java/org/spigotmc/TicksPerSecondCommand.java
+@@ -48,6 +48,6 @@ public class TicksPerSecondCommand extends Command
+     private static String format(double tps) // Paper - Made static
+     {
+         return ( ( tps > 18.0 ) ? ChatColor.GREEN : ( tps > 16.0 ) ? ChatColor.YELLOW : ChatColor.RED ).toString()
+-                + ( ( tps > 21.0 ) ? "*" : "" ) + Math.min( Math.round( tps * 100.0 ) / 100.0, 20.0 ); // Paper - only print * at 21, we commonly peak to 20.02 as the tick sleep is not accurate enough, stop the noise
++                + ( ( tps > 21.0 ) ? "*" : "" ) + Math.round( tps * 100.0 ) / 100.0; // Paper - only print * at 21, we commonly peak to 20.02 as the tick sleep is not accurate enough, stop the noise
+     }
+ }
