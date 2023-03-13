@@ -16,3 +16,10 @@ The fork's functionality can be accessed through the command `/stps` (with the p
 Download the `paperclip.jar` from the releases.
 
 The setup is the same as any normal paper server.
+
+**Note for WorldEdit:**
+
+Add the following line to the bottom of `plugins/WorldEdit/config.yml` to enable functionality:
+```yaml
+allow-editing-on-unsupported-versions: I accept that I will receive no support with this flag enabled.
+```
