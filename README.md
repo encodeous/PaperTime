@@ -13,7 +13,7 @@ The fork's functionality can be accessed through the command `/stps` (with the p
 
 ## Setup
 
-Download the `paperclip.jar` from the releases.
+Download the paperclip from the releases.
 
 The setup is the same as any normal paper server.
 
