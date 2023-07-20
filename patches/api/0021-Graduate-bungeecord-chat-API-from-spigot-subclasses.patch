@@ -6,10 +6,10 @@ Subject: [PATCH] Graduate bungeecord chat API from spigot subclasses
 Change Javadoc to be accurate
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 1035ce181415a19f8d6460f70d3d900e3f7017d3..316146305465b68b703e898206745de94ad5350f 100644
+index b53e94d79862d66165bbcd2a79b82770398a7f3e..9417030074fccdd9113bf75eb8f17f74b9a9118b 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -379,6 +379,30 @@ public final class Bukkit {
+@@ -410,6 +410,30 @@ public final class Bukkit {
          return server.broadcastMessage(message);
      }
  
@@ -41,10 +41,10 @@ index 1035ce181415a19f8d6460f70d3d900e3f7017d3..316146305465b68b703e898206745de9
       * Gets the name of the update folder. The update folder is used to safely
       * update plugins at the right moment on a plugin load.
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 6a7b91af3e738613cf79c13e2844efe9a2efd254..bef555b3de44fed312b45a5d5cd811b18fda88c8 100644
+index 124e88e512d24b6ff7ace3cf7d5a6adf4c2bb40d..ccc825a2ea43bb84a5a08dff00c4d8ec27e4e95a 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -312,6 +312,30 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -345,6 +345,30 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
      @Deprecated // Paper
      public int broadcastMessage(@NotNull String message);
  
@@ -76,10 +76,10 @@ index 6a7b91af3e738613cf79c13e2844efe9a2efd254..bef555b3de44fed312b45a5d5cd811b1
       * Gets the name of the update folder. The update folder is used to safely
       * update plugins at the right moment on a plugin load.
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 3c7665d5e96e710eb1ebb439a0bc0fd441bd2532..1fe1d5a0a777ecaab9ac1d8092e5a46ddacf4e18 100644
+index 950ca8562568cb161f6935deeafd8caa716fa33f..dbdbea106c11136f449b572b9709969c8a9569bd 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -813,6 +813,42 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -953,6 +953,42 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       */
      public void sendMap(@NotNull MapView map);
  
@@ -120,5 +120,5 @@ index 3c7665d5e96e710eb1ebb439a0bc0fd441bd2532..1fe1d5a0a777ecaab9ac1d8092e5a46d
 +    // Paper end
 +
      /**
-      * Forces an update of the player's entire inventory.
-      *
+      * Send a hurt animation. This fakes incoming damage towards the player from
+      * the given yaw relative to the player's direction.

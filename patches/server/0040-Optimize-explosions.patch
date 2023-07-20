@@ -10,10 +10,10 @@ This patch adds a per-tick cache that is used for storing and retrieving
 an entity's exposure during an explosion.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index ac81428f19e2d445f315000d34173c2d650a9aeb..28d58f402f15ee37cc1bfa3114839db281fc5f57 100644
+index 71c8bb318b2e99b7d0b91196ac0b1b5bfbc8bc79..3ff9a5a8f4b9a91958f6d846a7a5337a01dbb803 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1396,6 +1396,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1404,6 +1404,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
              this.profiler.pop();
              this.profiler.pop();
@@ -22,7 +22,7 @@ index ac81428f19e2d445f315000d34173c2d650a9aeb..28d58f402f15ee37cc1bfa3114839db2
  
          this.profiler.popPush("connection");
 diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
-index c5544f952be057bae9407725d885798f461081ea..b71cd16a63889d8a286b642158f9ab45af89b7c4 100644
+index e360022498b91a8371b33d84bf6fff96c503999d..925d37ca684e7e6a3ad88e6e040f3599225f0b1d 100644
 --- a/src/main/java/net/minecraft/world/level/Explosion.java
 +++ b/src/main/java/net/minecraft/world/level/Explosion.java
 @@ -221,7 +221,7 @@ public class Explosion {
@@ -34,7 +34,7 @@ index c5544f952be057bae9407725d885798f461081ea..b71cd16a63889d8a286b642158f9ab45
                          double d13 = (1.0D - d7) * d12;
  
                          // CraftBukkit start
-@@ -494,4 +494,84 @@ public class Explosion {
+@@ -513,4 +513,84 @@ public class Explosion {
  
          private BlockInteraction() {}
      }
@@ -120,10 +120,10 @@ index c5544f952be057bae9407725d885798f461081ea..b71cd16a63889d8a286b642158f9ab45
 +    // Paper end
  }
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index e082e4a8c8fbce341bcf00115d1579b4bed4b2a4..746cab58dc67b47bb57889343c625e038dda4851 100644
+index a022d009b72e366ed69d05087457b712970c0b84..da553430864689c426ad2c1dd74ad7d1134ffbae 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
-@@ -164,6 +164,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -167,6 +167,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
      private org.spigotmc.TickLimiter entityLimiter;
      private org.spigotmc.TickLimiter tileLimiter;
      private int tileTickPosition;

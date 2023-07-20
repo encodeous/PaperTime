@@ -5,10 +5,10 @@ Subject: [PATCH] Configurable container update tick rate
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index a95e2e05db626edbedaa604f059e19a592a682a3..c9e262967f040d224e284aa82256422db14aa9d5 100644
+index ee422a97a63749172f9f9643513ae9ab111c2400..321d14f241df1246061ba73b2488f5ab5326a734 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-@@ -233,6 +233,7 @@ public class ServerPlayer extends Player {
+@@ -241,6 +241,7 @@ public class ServerPlayer extends Player {
      private int containerCounter;
      public int latency;
      public boolean wonGame;
@@ -16,7 +16,7 @@ index a95e2e05db626edbedaa604f059e19a592a682a3..c9e262967f040d224e284aa82256422d
  
      // CraftBukkit start
      public String displayName;
-@@ -623,7 +624,12 @@ public class ServerPlayer extends Player {
+@@ -672,7 +673,12 @@ public class ServerPlayer extends Player {
              --this.invulnerableTime;
          }
  
@@ -24,9 +24,9 @@ index a95e2e05db626edbedaa604f059e19a592a682a3..c9e262967f040d224e284aa82256422d
 +        // Paper start - Configurable container update tick rate
 +        if (--containerUpdateDelay <= 0) {
 +            this.containerMenu.broadcastChanges();
-+            containerUpdateDelay = level.paperConfig().tickRates.containerUpdate;
++            containerUpdateDelay = this.level().paperConfig().tickRates.containerUpdate;
 +        }
 +        // Paper end
-         if (!this.level.isClientSide && !this.containerMenu.stillValid(this)) {
+         if (!this.level().isClientSide && !this.containerMenu.stillValid(this)) {
              this.closeContainer();
              this.containerMenu = this.inventoryMenu;

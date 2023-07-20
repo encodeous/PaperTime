@@ -5,10 +5,10 @@ Subject: [PATCH] Allow for toggling of spawn chunks
 
 
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index 5ed57b1156b1f358fb7d1d876becfc06f47ffe3b..4b2aadae3a7595a5aee2bc71216adc34fa0f2cf9 100644
+index 5988c0847af4e8f0094328e91f736f25d567db60..fb78a91d1ab77f909823422c6d4e2ef7ed10c9c3 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
-@@ -256,6 +256,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -261,6 +261,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          });
          // CraftBukkit end
          timings = new co.aikar.timings.WorldTimingsHandler(this); // Paper - code below can generate new world and access timings

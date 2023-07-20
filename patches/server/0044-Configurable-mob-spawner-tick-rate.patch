@@ -5,7 +5,7 @@ Subject: [PATCH] Configurable mob spawner tick rate
 
 
 diff --git a/src/main/java/net/minecraft/world/level/BaseSpawner.java b/src/main/java/net/minecraft/world/level/BaseSpawner.java
-index 3e83bff81a0656d5e1d079ad9e63c7d27561c8e3..b214a79efc4f5279d3dd29feb1f79efc45788a8d 100644
+index 213fed3a2b32226fc128d213ee3e9fa3ae76e88e..64bd7d265a45575ce46c1a792f90cadc76763871 100644
 --- a/src/main/java/net/minecraft/world/level/BaseSpawner.java
 +++ b/src/main/java/net/minecraft/world/level/BaseSpawner.java
 @@ -45,6 +45,7 @@ public abstract class BaseSpawner {
@@ -37,13 +37,3 @@ index 3e83bff81a0656d5e1d079ad9e63c7d27561c8e3..b214a79efc4f5279d3dd29feb1f79efc
              } else {
                  boolean flag = false;
                  RandomSource randomsource = world.getRandom();
-@@ -152,8 +158,7 @@ public abstract class BaseSpawner {
-                                 ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.SPAWNER, (SpawnGroupData) null, (CompoundTag) null);
-                             }
-                             // Spigot Start
--                            if ( entityinsentient.level.spigotConfig.nerfSpawnerMobs )
--                            {
-+                            if (entityinsentient.level.spigotConfig.nerfSpawnerMobs) {
-                                 entityinsentient.aware = false;
-                             }
-                             // Spigot End

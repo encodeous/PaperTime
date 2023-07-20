@@ -5,10 +5,10 @@ Subject: [PATCH] Make the default permission message configurable
 
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 6567da9e9c89f1995b9c3544b4dd767d66e6f5f2..c59700bcec0938bd5a0f10c4e0d5e3e2c446d622 100644
+index 627c04f5e71ad032760296092a65596b08807a55..213b76f4ba50e882b6c7349d980701e0b6323e7c 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
-@@ -2195,6 +2195,28 @@ public final class Bukkit {
+@@ -2268,6 +2268,28 @@ public final class Bukkit {
          return server.suggestPlayerNamesWhenNullTabCompletions();
      }
  
@@ -38,10 +38,10 @@ index 6567da9e9c89f1995b9c3544b4dd767d66e6f5f2..c59700bcec0938bd5a0f10c4e0d5e3e2
       * Creates a PlayerProfile for the specified uuid, with name as null.
       *
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index c46cae77e6a1d3f01b08ff03407eb1a564d000de..7e51025404bdc64e5eff48423280ad53244c6631 100644
+index 88b93ac279f2bd23ca853788c409549fe2afe041..281c1e511e46a31a1c3ee9380d60888628af87c3 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -1907,6 +1907,23 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -1974,6 +1974,23 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
       */
      boolean suggestPlayerNamesWhenNullTabCompletions();
  
@@ -66,7 +66,7 @@ index c46cae77e6a1d3f01b08ff03407eb1a564d000de..7e51025404bdc64e5eff48423280ad53
       * Creates a PlayerProfile for the specified uuid, with name as null.
       *
 diff --git a/src/main/java/org/bukkit/command/Command.java b/src/main/java/org/bukkit/command/Command.java
-index a26df5f6341d22ecd5e71da59b8f091848e627ad..608b541aef01f33891a492fff5b8400496832c3a 100644
+index 1c6205cc667bbec8f6aca479f13b3e9cfcd63ab2..b791358f90fe92bc2264d9a26492245763813af3 100644
 --- a/src/main/java/org/bukkit/command/Command.java
 +++ b/src/main/java/org/bukkit/command/Command.java
 @@ -184,10 +184,9 @@ public abstract class Command {

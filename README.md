@@ -2,8 +2,6 @@
 
 PaperTime is a specialized Paper fork that enables technical players to manipulate the game speed.
 
-Version: `1.19.3` as of now.
-
 The fork's functionality can be accessed through the command `/stps` (with the permission node of `bukkit.command.stps`)
 
 ## Features

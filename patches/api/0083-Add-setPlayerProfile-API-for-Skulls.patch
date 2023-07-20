@@ -7,7 +7,7 @@ This allows you to create already filled textures on Skulls to avoid texture loo
 which commonly cause rate limit issues with Mojang API
 
 diff --git a/src/main/java/org/bukkit/block/Skull.java b/src/main/java/org/bukkit/block/Skull.java
-index 8d4093a413ca14a1c4c24a2a1b74c1d574943ffa..c7502a3913cf14e66559c21489d6f2205f3eb06a 100644
+index b39128bb0ca2d4fe7a254193236c60fb5bfaa7da..5135b8e6028e6926e2711e2dd6ce68b76f468fd7 100644
 --- a/src/main/java/org/bukkit/block/Skull.java
 +++ b/src/main/java/org/bukkit/block/Skull.java
 @@ -63,6 +63,20 @@ public interface Skull extends TileState {

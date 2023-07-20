@@ -5,7 +5,7 @@ Subject: [PATCH] Test changes
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index ce176ef04e211b82020fa082b9cb1bdc4769a526..15456e54d8a392e702a30dfb3d06a3f74156dce7 100644
+index 592d2cd1114ee9fbf7b16068ef729f7db4de83d1..f3f20b34a3ebcbb75004003892e903ee4fd0edd3 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -12,6 +12,7 @@ dependencies {
@@ -14,11 +14,11 @@ index ce176ef04e211b82020fa082b9cb1bdc4769a526..15456e54d8a392e702a30dfb3d06a3f7
      implementation("org.ow2.asm:asm-commons:9.4") // Paper - ASM event executor generation
 +    testImplementation("org.mockito:mockito-core:4.9.0") // Paper - switch to mockito
      implementation("commons-lang:commons-lang:2.6")
-     runtimeOnly("org.xerial:sqlite-jdbc:3.36.0.3")
-     runtimeOnly("mysql:mysql-connector-java:8.0.29")
+     runtimeOnly("org.xerial:sqlite-jdbc:3.42.0.0")
+     runtimeOnly("com.mysql:mysql-connector-j:8.0.33")
 diff --git a/src/test/java/io/papermc/paper/testing/DummyServer.java b/src/test/java/io/papermc/paper/testing/DummyServer.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c6503ff76f56bab5f383f0ca17d137155e9be447
+index 0000000000000000000000000000000000000000..e944e9dca13883c57e93e480ae5adfe51c342532
 --- /dev/null
 +++ b/src/test/java/io/papermc/paper/testing/DummyServer.java
 @@ -0,0 +1,67 @@
@@ -74,7 +74,7 @@ index 0000000000000000000000000000000000000000..c6503ff76f56bab5f383f0ca17d13715
 +
 +        when(dummyServer.getLootTable(any(NamespacedKey.class))).thenAnswer(invocation -> {
 +            final NamespacedKey key = invocation.getArgument(0, NamespacedKey.class);
-+            return new org.bukkit.craftbukkit.CraftLootTable(key, AbstractTestingBase.DATA_PACK.getLootTables().get(CraftNamespacedKey.toMinecraft(key)));
++            return new org.bukkit.craftbukkit.CraftLootTable(key, AbstractTestingBase.DATA_PACK.getLootData().getLootTable(CraftNamespacedKey.toMinecraft(key)));
 +        });
 +
 +        when(dummyServer.getRegistry(any())).thenAnswer(invocation -> {
@@ -119,18 +119,10 @@ index 0000000000000000000000000000000000000000..8dd0df8c2cc25d37a2590a0787268223
 +    }
 +}
 diff --git a/src/test/java/org/bukkit/support/AbstractTestingBase.java b/src/test/java/org/bukkit/support/AbstractTestingBase.java
-index 492c1ec28a9f1facb117d05245b32231554385ad..8013cc99c063d2ca0c578c093e3112676f5361b7 100644
+index 1b875fc4dc5550ffab21d11e0c2451a2b22250f9..c440dcf3cc2ddb8fd9094fe8495e820ae7797f5c 100644
 --- a/src/test/java/org/bukkit/support/AbstractTestingBase.java
 +++ b/src/test/java/org/bukkit/support/AbstractTestingBase.java
-@@ -2,7 +2,6 @@ package org.bukkit.support;
- 
- import com.google.common.collect.ImmutableList;
- import com.google.common.util.concurrent.MoreExecutors;
--import java.util.Collections;
- import java.util.List;
- import net.minecraft.SharedConstants;
- import net.minecraft.commands.Commands;
-@@ -49,6 +48,7 @@ public abstract class AbstractTestingBase {
+@@ -53,6 +53,7 @@ public abstract class AbstractTestingBase {
          LayeredRegistryAccess<RegistryLayer> layers = RegistryLayer.createRegistryAccess();
          layers = WorldLoader.loadAndReplaceLayer(resourceManager, layers, RegistryLayer.WORLDGEN, RegistryDataLoader.WORLDGEN_REGISTRIES);
          REGISTRY_CUSTOM = layers.compositeAccess().freeze();
@@ -138,7 +130,7 @@ index 492c1ec28a9f1facb117d05245b32231554385ad..8013cc99c063d2ca0c578c093e311267
          // Register vanilla pack
          DATA_PACK = ReloadableServerResources.loadResources(resourceManager, REGISTRY_CUSTOM, FeatureFlags.REGISTRY.allFlags(), Commands.CommandSelection.DEDICATED, 0, MoreExecutors.directExecutor(), MoreExecutors.directExecutor()).join();
          // Bind tags
-@@ -56,7 +56,6 @@ public abstract class AbstractTestingBase {
+@@ -60,7 +61,6 @@ public abstract class AbstractTestingBase {
          // Biome shortcut
          BIOMES = REGISTRY_CUSTOM.registryOrThrow(Registries.BIOME);
  
@@ -148,7 +140,7 @@ index 492c1ec28a9f1facb117d05245b32231554385ad..8013cc99c063d2ca0c578c093e311267
          ImmutableList.Builder<Material> builder = ImmutableList.builder();
 diff --git a/src/test/java/org/bukkit/support/DummyServer.java b/src/test/java/org/bukkit/support/DummyServer.java
 deleted file mode 100644
-index 946497353a64421592d2bae012c9a3cb874dd5b8..0000000000000000000000000000000000000000
+index e3197ea88b68de8f893f3fa986507b95b789645d..0000000000000000000000000000000000000000
 --- a/src/test/java/org/bukkit/support/DummyServer.java
 +++ /dev/null
 @@ -1,127 +0,0 @@
@@ -248,7 +240,7 @@ index 946497353a64421592d2bae012c9a3cb874dd5b8..00000000000000000000000000000000
 -                        @Override
 -                        public Object handle(DummyServer server, Object[] args) {
 -                            NamespacedKey key = (NamespacedKey) args[0];
--                            return new CraftLootTable(key, AbstractTestingBase.DATA_PACK.getLootTables().get(CraftNamespacedKey.toMinecraft(key)));
+-                            return new CraftLootTable(key, AbstractTestingBase.DATA_PACK.getLootData().getLootTable(CraftNamespacedKey.toMinecraft(key)));
 -                        }
 -                    }
 -                );

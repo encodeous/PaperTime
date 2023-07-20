@@ -5,10 +5,10 @@ Subject: [PATCH] Async GameProfileCache saving
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 3ed50490121f34ab5b247565b9a4555bf6a46dff..0a419ec121bbddffa0424147c642f79d4e5eb817 100644
+index c09ac4ef459c8df6c8623de7fbb63f8c2558bd2d..006289473c03c8484b26264c61eaf6a5e73658c0 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -934,7 +934,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -933,7 +933,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          } catch (java.lang.InterruptedException ignored) {} // Paper
          if (org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly) {
              MinecraftServer.LOGGER.info("Saving usercache.json");
@@ -18,7 +18,7 @@ index 3ed50490121f34ab5b247565b9a4555bf6a46dff..0a419ec121bbddffa0424147c642f79d
          // Spigot end
          io.papermc.paper.chunk.system.io.RegionFileIOThread.close(true); // Paper // Paper - rewrite chunk system
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index 18f7d73fd8a780753e2249a9fec6bb335ebfdeed..35904c69e14c4c0addda204d5e3788518c2e16c4 100644
+index 049f7dc31576980007eb8f0caab926bb58fead78..81a0a897a1fd2a408bfe43f24ed5e5f4bbefe161 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -242,7 +242,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface

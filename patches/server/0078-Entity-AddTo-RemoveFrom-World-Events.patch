@@ -5,10 +5,10 @@ Subject: [PATCH] Entity AddTo/RemoveFrom World Events
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index a487331d9df8fa0d58cfb0859c25a8fffe376ac2..e7d07d1f86af49b8729f6ac66b398ee6aae5ab4a 100644
+index 699fc5f11efa8240723854cd2e91877b278f9495..7da059a2e8560250021654f3d5586027c15c7dd3 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
-@@ -2225,6 +2225,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
+@@ -2373,6 +2373,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
                  entity.setOrigin(entity.getOriginVector().toLocation(getWorld()));
              }
              // Paper end
@@ -16,7 +16,7 @@ index a487331d9df8fa0d58cfb0859c25a8fffe376ac2..e7d07d1f86af49b8729f6ac66b398ee6
          }
  
          public void onTrackingEnd(Entity entity) {
-@@ -2300,6 +2301,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
+@@ -2448,6 +2449,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
                  }
              }
              // CraftBukkit end

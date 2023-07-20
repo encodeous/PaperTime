@@ -5,15 +5,15 @@ Subject: [PATCH] Paper Plugins
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 44af6bd382dca476e4afd458a743ae56c91a8dee..f5aa8d96dce1dbac78a99535786cf9c0085b3b80 100644
+index ba6f0a70ba2442dbe60ed6cc92e4fb91a48d9f3b..22b65c3ad4ed6e19b88a51a2e001f0e5846d9ae6 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
-@@ -44,7 +44,7 @@ dependencies {
+@@ -47,7 +47,7 @@ dependencies {
      implementation("org.ow2.asm:asm-commons:9.4")
      // Paper end
  
 -    compileOnly("org.apache.maven:maven-resolver-provider:3.8.5")
-+    api("org.apache.maven:maven-resolver-provider:3.8.5") // Paper, expose
++    api("org.apache.maven:maven-resolver-provider:3.8.5")
      compileOnly("org.apache.maven.resolver:maven-resolver-connector-basic:1.7.3")
      compileOnly("org.apache.maven.resolver:maven-resolver-transport-http:1.7.3")
      compileOnly("com.google.code.findbugs:jsr305:1.3.9") // Paper
@@ -194,9 +194,29 @@ index 0000000000000000000000000000000000000000..cdbc93b317b3bab47bf6552c29cfbb2c
 +    void clearPermissions();
 +
 +}
+diff --git a/src/main/java/io/papermc/paper/plugin/bootstrap/BootstrapContext.java b/src/main/java/io/papermc/paper/plugin/bootstrap/BootstrapContext.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..08f2050356acaf74e3210416760e3873c2dafd2c
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/plugin/bootstrap/BootstrapContext.java
+@@ -0,0 +1,14 @@
++package io.papermc.paper.plugin.bootstrap;
++
++import org.jetbrains.annotations.ApiStatus;
++
++/**
++ * Represents the context provided to a {@link PluginBootstrap} during both the bootstrapping and plugin
++ * instantiation logic.
++ * A boostrap context may be used to access data or logic usually provided to {@link org.bukkit.plugin.Plugin} instances
++ * like the plugin's configuration or logger during the plugins bootstrap.
++ */
++@ApiStatus.Experimental
++@ApiStatus.NonExtendable
++public interface BootstrapContext extends PluginProviderContext {
++}
 diff --git a/src/main/java/io/papermc/paper/plugin/bootstrap/PluginBootstrap.java b/src/main/java/io/papermc/paper/plugin/bootstrap/PluginBootstrap.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ea84b11e8682e73fcd563fec65e76b707546a99e
+index 0000000000000000000000000000000000000000..288c078da3d3ca78d02caa4e3565ac7cf89f9f9f
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/plugin/bootstrap/PluginBootstrap.java
 @@ -0,0 +1,41 @@
@@ -226,7 +246,7 @@ index 0000000000000000000000000000000000000000..ea84b11e8682e73fcd563fec65e76b70
 +     *
 +     * @param context the server provided context
 +     */
-+    void bootstrap(@NotNull PluginProviderContext context);
++    void bootstrap(@NotNull BootstrapContext context);
 +
 +    /**
 +     * Called by the server to instantiate your main class.
@@ -243,10 +263,10 @@ index 0000000000000000000000000000000000000000..ea84b11e8682e73fcd563fec65e76b70
 +}
 diff --git a/src/main/java/io/papermc/paper/plugin/bootstrap/PluginProviderContext.java b/src/main/java/io/papermc/paper/plugin/bootstrap/PluginProviderContext.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8be416f01055d94b474ecc425fc0bec69a814815
+index 0000000000000000000000000000000000000000..2c14693155de3654d5ca011c63e13e4a1abf2080
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/plugin/bootstrap/PluginProviderContext.java
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,52 @@
 +package io.papermc.paper.plugin.bootstrap;
 +
 +import io.papermc.paper.plugin.configuration.PluginMeta;
@@ -258,7 +278,7 @@ index 0000000000000000000000000000000000000000..8be416f01055d94b474ecc425fc0bec6
 +
 +/**
 + * Represents the context provided to a {@link PluginBootstrap} during both the bootstrapping and plugin
-+ * instanciation logic.
++ * instantiation logic.
 + * A boostrap context may be used to access data or logic usually provided to {@link org.bukkit.plugin.Plugin} instances
 + * like the plugin's configuration or logger during the plugins bootstrap.
 + */
@@ -289,6 +309,14 @@ index 0000000000000000000000000000000000000000..8be416f01055d94b474ecc425fc0bec6
 +     */
 +    @NotNull
 +    ComponentLogger getLogger();
++
++    /**
++     * Provides the path to the originating source of the plugin, such as the plugin's JAR file.
++     *
++     * @return the previously described path
++     */
++    @NotNull
++    Path getPluginSource();
 +
 +}
 diff --git a/src/main/java/io/papermc/paper/plugin/configuration/PluginMeta.java b/src/main/java/io/papermc/paper/plugin/configuration/PluginMeta.java
@@ -675,7 +703,7 @@ index 0000000000000000000000000000000000000000..0546fa1e9dcd7155086a8650806a8c08
 +}
 diff --git a/src/main/java/io/papermc/paper/plugin/loader/library/impl/JarLibrary.java b/src/main/java/io/papermc/paper/plugin/loader/library/impl/JarLibrary.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..3327595d154700890c862a2ced5eff93da4bd634
+index 0000000000000000000000000000000000000000..e3da0d67cab01e1233dccde1a12ff25961ee79fb
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/plugin/loader/library/impl/JarLibrary.java
 @@ -0,0 +1,45 @@
@@ -700,7 +728,7 @@ index 0000000000000000000000000000000000000000..3327595d154700890c862a2ced5eff93
 + * resulting in a jar library that provides the jar at {@code libs/custom-library-1.24.jar} to the plugins classloader
 + * at runtime.
 + * <p>
-+ * The jar library implementation will error if file exists at the specified path.
++ * The jar library implementation will error if the file does not exist at the specified path.
 + */
 +public class JarLibrary implements ClassPathLibrary {
 +
@@ -726,7 +754,7 @@ index 0000000000000000000000000000000000000000..3327595d154700890c862a2ced5eff93
 +}
 diff --git a/src/main/java/io/papermc/paper/plugin/loader/library/impl/MavenLibraryResolver.java b/src/main/java/io/papermc/paper/plugin/loader/library/impl/MavenLibraryResolver.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e3e902a708a760be167cb1bba8e845c5fa5b9141
+index 0000000000000000000000000000000000000000..9af07d168beadaa77e4965819200eeb94fe3e092
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/plugin/loader/library/impl/MavenLibraryResolver.java
 @@ -0,0 +1,132 @@
@@ -756,12 +784,12 @@ index 0000000000000000000000000000000000000000..e3e902a708a760be167cb1bba8e845c5
 +import org.eclipse.aether.transfer.TransferEvent;
 +import org.eclipse.aether.transport.http.HttpTransporterFactory;
 +import org.jetbrains.annotations.NotNull;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
 +
 +import java.io.File;
 +import java.util.ArrayList;
 +import java.util.List;
-+import java.util.logging.Level;
-+import java.util.logging.Logger;
 +
 +/**
 + * The maven library resolver acts as a resolver for yet to be resolved jar libraries that may be pulled from a
@@ -782,7 +810,7 @@ index 0000000000000000000000000000000000000000..e3e902a708a760be167cb1bba8e845c5
 + */
 +public class MavenLibraryResolver implements ClassPathLibrary {
 +
-+    private static final Logger logger = Logger.getLogger("MavenLibraryResolver");
++    private static final Logger logger = LoggerFactory.getLogger("MavenLibraryResolver");
 +
 +    private final RepositorySystem repository;
 +    private final DefaultRepositorySystemSession session;
@@ -810,7 +838,7 @@ index 0000000000000000000000000000000000000000..e3e902a708a760be167cb1bba8e845c5
 +        this.session.setTransferListener(new AbstractTransferListener() {
 +            @Override
 +            public void transferInitiated(@NotNull TransferEvent event) throws TransferCancelledException {
-+                logger.log(Level.INFO, "Downloading {0}", event.getResource().getRepositoryUrl() + event.getResource().getResourceName());
++                logger.info("Downloading {}", event.getResource().getRepositoryUrl() + event.getResource().getResourceName());
 +            }
 +        });
 +        this.session.setReadOnly();
@@ -1310,13 +1338,13 @@ index 0000000000000000000000000000000000000000..6bf3d212a6156ad9ab0e82d1ca0a04f8
 +
 +}
 diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
-index 876072a6c91bd02c9c7de53556419b8e1ac48f27..dc9a4f12d9f05a3ae7c9f1c7648123e4b3dfd115 100644
+index fd0ae07b8a19f6b628601a487329a929f3a26c91..2042e3fb0ea347148814d9838cd7bb475bd23984 100644
 --- a/src/main/java/org/bukkit/UnsafeValues.java
 +++ b/src/main/java/org/bukkit/UnsafeValues.java
-@@ -96,4 +96,14 @@ public interface UnsafeValues {
-     String getTranslationKey(EntityType entityType);
+@@ -101,4 +101,14 @@ public interface UnsafeValues {
  
-     String getTranslationKey(ItemStack itemStack);
+     @Nullable
+     FeatureFlag getFeatureFlag(@NotNull NamespacedKey key);
 +
 +    // Paper start
 +    @Deprecated(forRemoval = true)
@@ -1354,6 +1382,18 @@ index e195e74c48c69047aa825b75fad95419c505b41f..53f28c9e6843991486a576d41b6641c1
          register("bukkit", new TimingsCommand("timings"));
      }
  
+diff --git a/src/main/java/org/bukkit/command/defaults/PluginsCommand.java b/src/main/java/org/bukkit/command/defaults/PluginsCommand.java
+index bcb576a4271b1ec7b1cfe6f83cf161b7d89ed2e5..4d849e1283fdf6b0872a0f2183964cc93748c116 100644
+--- a/src/main/java/org/bukkit/command/defaults/PluginsCommand.java
++++ b/src/main/java/org/bukkit/command/defaults/PluginsCommand.java
+@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
+ import org.bukkit.plugin.Plugin;
+ import org.jetbrains.annotations.NotNull;
+ 
++@Deprecated(forRemoval = true) // Paper
+ public class PluginsCommand extends BukkitCommand {
+     public PluginsCommand(@NotNull String name) {
+         super(name);
 diff --git a/src/main/java/org/bukkit/plugin/Plugin.java b/src/main/java/org/bukkit/plugin/Plugin.java
 index b37938745f916b5f0111b07b1a1c97527f026e9d..8c76716249e44ed8bf6be94c1f5c7b6d9bb35be2 100644
 --- a/src/main/java/org/bukkit/plugin/Plugin.java
@@ -1401,10 +1441,10 @@ index 94f8ceb965cecb5669a84a0ec61c0f706c2a2673..e773db6da357ad210eb24d4c389af2dc
      }
  }
 diff --git a/src/main/java/org/bukkit/plugin/PluginDescriptionFile.java b/src/main/java/org/bukkit/plugin/PluginDescriptionFile.java
-index 0c9f4d1e9104fa6951114c1f9ec954dfcc749196..f1ae66989afaa433bf2896e0bfe2cea472f774d8 100644
+index 0eae1c027cab0444a125ae4efed7f9fcb1b9934f..07e8908d25fcd4e5eabadc9f019b54acff3b5e3c 100644
 --- a/src/main/java/org/bukkit/plugin/PluginDescriptionFile.java
 +++ b/src/main/java/org/bukkit/plugin/PluginDescriptionFile.java
-@@ -194,7 +194,7 @@ import org.yaml.snakeyaml.nodes.Tag;
+@@ -197,7 +197,7 @@ import org.yaml.snakeyaml.representer.Representer;
   *      inferno.burningdeaths: true
   *</pre></blockquote>
   */
@@ -1413,7 +1453,7 @@ index 0c9f4d1e9104fa6951114c1f9ec954dfcc749196..f1ae66989afaa433bf2896e0bfe2cea4
      private static final Pattern VALID_NAME = Pattern.compile("^[A-Za-z0-9 _.-]+$");
      private static final ThreadLocal<Yaml> YAML = new ThreadLocal<Yaml>() {
          @Override
-@@ -254,6 +254,70 @@ public final class PluginDescriptionFile {
+@@ -258,6 +258,70 @@ public final class PluginDescriptionFile {
      private Set<PluginAwareness> awareness = ImmutableSet.of();
      private String apiVersion = null;
      private List<String> libraries = ImmutableList.of();
@@ -1536,7 +1576,7 @@ index 41e26451fe12d8e6e0ef73c85731b24b4e3f200c..03213fde8315384ec56c16031cfc606a
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
-index a69c5d5cad6168aeaae41e8adc319dc8c976b1e2..f64a90241ce7f73e111e6b5ac6ff87cd93583c0e 100644
+index a69c5d5cad6168aeaae41e8adc319dc8c976b1e2..77f9ebbe675cf1b6a17e98d98e7666711998eb4e 100644
 --- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 +++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 @@ -43,6 +43,8 @@ import org.jetbrains.annotations.Nullable;
@@ -1677,7 +1717,7 @@ index a69c5d5cad6168aeaae41e8adc319dc8c976b1e2..f64a90241ce7f73e111e6b5ac6ff87cd
          Preconditions.checkArgument(priority != null, "Priority cannot be null");
          Preconditions.checkArgument(executor != null, "Executor cannot be null");
          Preconditions.checkArgument(plugin != null, "Plugin cannot be null");
-+        if (true) {this.paperPluginManager.registerEvent(event, listener, priority, executor, plugin); return;} // Paper
++        if (true) {this.paperPluginManager.registerEvent(event, listener, priority, executor, plugin, ignoreCancelled); return;} // Paper
  
          if (!plugin.isEnabled()) {
              throw new IllegalPluginAccessException("Plugin attempted to register " + event + " while not enabled");
@@ -1842,10 +1882,10 @@ index a80251eff75430863b37db1c131e22593f3fcd5e..310c4041963a3f1e0a26e39a6da12a9b
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
-index 669a70faa95d0d6525a731d73499ed6fb0b48320..c9cf9d361a1289aba383718733a2098b5eafb38f 100644
+index ee100b7ad89ce1eccef0c3bc55885cd78aadd1ec..f594913e6b94f77b26a4a758c447a42d8a25b6ff 100644
 --- a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
 +++ b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
-@@ -38,6 +38,7 @@ public abstract class JavaPlugin extends PluginBase {
+@@ -40,6 +40,7 @@ public abstract class JavaPlugin extends PluginBase {
      private Server server = null;
      private File file = null;
      private PluginDescriptionFile description = null;
@@ -1853,7 +1893,7 @@ index 669a70faa95d0d6525a731d73499ed6fb0b48320..c9cf9d361a1289aba383718733a2098b
      private File dataFolder = null;
      private ClassLoader classLoader = null;
      private boolean naggable = true;
-@@ -46,13 +47,16 @@ public abstract class JavaPlugin extends PluginBase {
+@@ -48,13 +49,16 @@ public abstract class JavaPlugin extends PluginBase {
      private PluginLogger logger = null;
  
      public JavaPlugin() {
@@ -1874,7 +1914,7 @@ index 669a70faa95d0d6525a731d73499ed6fb0b48320..c9cf9d361a1289aba383718733a2098b
      protected JavaPlugin(@NotNull final JavaPluginLoader loader, @NotNull final PluginDescriptionFile description, @NotNull final File dataFolder, @NotNull final File file) {
          final ClassLoader classLoader = this.getClass().getClassLoader();
          if (classLoader instanceof PluginClassLoader) {
-@@ -77,9 +81,12 @@ public abstract class JavaPlugin extends PluginBase {
+@@ -79,9 +83,12 @@ public abstract class JavaPlugin extends PluginBase {
       * Gets the associated PluginLoader responsible for this plugin
       *
       * @return PluginLoader that controls this plugin
@@ -1887,7 +1927,7 @@ index 669a70faa95d0d6525a731d73499ed6fb0b48320..c9cf9d361a1289aba383718733a2098b
      public final PluginLoader getPluginLoader() {
          return loader;
      }
-@@ -120,13 +127,20 @@ public abstract class JavaPlugin extends PluginBase {
+@@ -122,13 +129,20 @@ public abstract class JavaPlugin extends PluginBase {
       * Returns the plugin.yaml file containing the details for this plugin
       *
       * @return Contents of the plugin.yaml file
@@ -1900,7 +1940,7 @@ index 669a70faa95d0d6525a731d73499ed6fb0b48320..c9cf9d361a1289aba383718733a2098b
          return description;
      }
  
-+    @Nullable
++    @NotNull
 +    public final io.papermc.paper.plugin.configuration.PluginMeta getPluginMeta() {
 +        return this.pluginMeta;
 +    }
@@ -1908,7 +1948,7 @@ index 669a70faa95d0d6525a731d73499ed6fb0b48320..c9cf9d361a1289aba383718733a2098b
      @NotNull
      @Override
      public FileConfiguration getConfig() {
-@@ -256,7 +270,8 @@ public abstract class JavaPlugin extends PluginBase {
+@@ -258,7 +272,8 @@ public abstract class JavaPlugin extends PluginBase {
       *
       * @param enabled true if enabled, otherwise false
       */
@@ -1918,7 +1958,7 @@ index 669a70faa95d0d6525a731d73499ed6fb0b48320..c9cf9d361a1289aba383718733a2098b
          if (isEnabled != enabled) {
              isEnabled = enabled;
  
-@@ -268,9 +283,18 @@ public abstract class JavaPlugin extends PluginBase {
+@@ -270,9 +285,18 @@ public abstract class JavaPlugin extends PluginBase {
          }
      }
  
@@ -1940,7 +1980,7 @@ index 669a70faa95d0d6525a731d73499ed6fb0b48320..c9cf9d361a1289aba383718733a2098b
          this.server = server;
          this.file = file;
          this.description = description;
-@@ -278,6 +302,7 @@ public abstract class JavaPlugin extends PluginBase {
+@@ -280,6 +304,7 @@ public abstract class JavaPlugin extends PluginBase {
          this.classLoader = classLoader;
          this.configFile = new File(dataFolder, "config.yml");
          this.logger = new PluginLogger(this);
@@ -1948,7 +1988,7 @@ index 669a70faa95d0d6525a731d73499ed6fb0b48320..c9cf9d361a1289aba383718733a2098b
      }
  
      /**
-@@ -394,10 +419,10 @@ public abstract class JavaPlugin extends PluginBase {
+@@ -396,10 +421,10 @@ public abstract class JavaPlugin extends PluginBase {
              throw new IllegalArgumentException(clazz + " does not extend " + JavaPlugin.class);
          }
          final ClassLoader cl = clazz.getClassLoader();
@@ -1962,7 +2002,7 @@ index 669a70faa95d0d6525a731d73499ed6fb0b48320..c9cf9d361a1289aba383718733a2098b
          if (plugin == null) {
              throw new IllegalStateException("Cannot get plugin for " + clazz + " from a static initializer");
          }
-@@ -420,10 +445,10 @@ public abstract class JavaPlugin extends PluginBase {
+@@ -422,10 +447,10 @@ public abstract class JavaPlugin extends PluginBase {
      public static JavaPlugin getProvidingPlugin(@NotNull Class<?> clazz) {
          Preconditions.checkArgument(clazz != null, "Null class cannot have a plugin");
          final ClassLoader cl = clazz.getClassLoader();
@@ -2040,7 +2080,7 @@ index 6d634b0ea813ccb19f1562a7d0e5a59cea4eab21..e4b6f278a811acbb0070e311c5c3bdaf
          }
  
 diff --git a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
-index 2f74ec96ece706de23156ebabfe493211bc05391..2d2fa6ce5200eb5c75a733f9f54f400113cc22b0 100644
+index 2f74ec96ece706de23156ebabfe493211bc05391..302319acbc257a075adfb78d9f5c49fdadf45bdc 100644
 --- a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
 +++ b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
 @@ -29,7 +29,8 @@ import org.jetbrains.annotations.Nullable;
@@ -2067,7 +2107,7 @@ index 2f74ec96ece706de23156ebabfe493211bc05391..2d2fa6ce5200eb5c75a733f9f54f4001
  
 -    PluginClassLoader(@NotNull final JavaPluginLoader loader, @Nullable final ClassLoader parent, @NotNull final PluginDescriptionFile description, @NotNull final File dataFolder, @NotNull final File file, @Nullable ClassLoader libraryLoader) throws IOException, InvalidPluginException, MalformedURLException {
 +    @org.jetbrains.annotations.ApiStatus.Internal // Paper
-+    public PluginClassLoader(@Nullable final ClassLoader parent, @NotNull final PluginDescriptionFile description, @NotNull final File dataFolder, @NotNull final File file, @Nullable ClassLoader libraryLoader, @Nullable JarFile jarFile, io.papermc.paper.plugin.provider.entrypoint.DependencyContext dependencyContext) throws IOException, InvalidPluginException, MalformedURLException { // Paper // Paper - use JarFile provided by SpigotPluginProvider
++    public PluginClassLoader(@Nullable final ClassLoader parent, @NotNull final PluginDescriptionFile description, @NotNull final File dataFolder, @NotNull final File file, @Nullable ClassLoader libraryLoader, JarFile jarFile, io.papermc.paper.plugin.provider.entrypoint.DependencyContext dependencyContext) throws IOException, InvalidPluginException, MalformedURLException { // Paper // Paper - use JarFile provided by SpigotPluginProvider
          super(new URL[] {file.toURI().toURL()}, parent);
 -        Preconditions.checkArgument(loader != null, "Loader cannot be null");
 +        this.loader = null; // Paper - pass null into loader field
@@ -2077,7 +2117,7 @@ index 2f74ec96ece706de23156ebabfe493211bc05391..2d2fa6ce5200eb5c75a733f9f54f4001
          this.dataFolder = dataFolder;
          this.file = file;
 -        this.jar = new JarFile(file);
-+        this.jar = jarFile == null ? new JarFile(file) : jarFile; // Paper - use JarFile provided by SpigotPluginProvider
++        this.jar = jarFile; // Paper - use JarFile provided by SpigotPluginProvider
          this.manifest = jar.getManifest();
          this.url = file.toURI().toURL();
          this.libraryLoader = libraryLoader;

@@ -322,7 +322,7 @@ index 0000000000000000000000000000000000000000..be3f92e3c6bcefe8b78da701b7512127
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/exception/ServerPluginMessageException.java b/src/main/java/com/destroystokyo/paper/exception/ServerPluginMessageException.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..89e132525cfae0ce979e37b3e2793df781e47227
+index 0000000000000000000000000000000000000000..2faef4cb358ec65e32a6aba6426f0dd7ddf90d2a
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/exception/ServerPluginMessageException.java
 @@ -0,0 +1,64 @@
@@ -364,7 +364,7 @@ index 0000000000000000000000000000000000000000..89e132525cfae0ce979e37b3e2793df7
 +    }
 +
 +    /**
-+     * Gets the channel to which the error occurred from recieving data from
++     * Gets the channel to which the error occurred from receiving data from
 +     *
 +     * @return exception channel
 +     */
@@ -493,7 +493,7 @@ index 4205649948a9e2a72f64c3f007112245abac6d50..b3b32ce429edbf1ed040354dbe28ab86
      }
  
 diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
-index 3fcb73a0fc2daaeb76dd4c6757afce52c5b3118b..2b8308989fce7f8a16907f8711b362e671fdbfb6 100644
+index 974ff7116b294473ec450757e8a9341540f43dcd..fc2dae69165776d08274e34a69962cc70445f411 100644
 --- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 +++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 @@ -515,7 +515,8 @@ public final class SimplePluginManager implements PluginManager {

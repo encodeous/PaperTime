@@ -5,10 +5,10 @@ Subject: [PATCH] Fix Cancelling BlockPlaceEvent triggering physics
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index e7d07d1f86af49b8729f6ac66b398ee6aae5ab4a..0d08690aade0e3334c583b62e0abf7bbab9a0c59 100644
+index 7da059a2e8560250021654f3d5586027c15c7dd3..35b59c83a35bc3a4d05bc95b0caec1f1865589c0 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
-@@ -1458,6 +1458,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
+@@ -1598,6 +1598,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
  
      @Override
      public void updateNeighborsAt(BlockPos pos, Block sourceBlock) {

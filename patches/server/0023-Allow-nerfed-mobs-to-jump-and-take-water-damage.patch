@@ -5,10 +5,10 @@ Subject: [PATCH] Allow nerfed mobs to jump and take water damage
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/Mob.java b/src/main/java/net/minecraft/world/entity/Mob.java
-index 10949455cc92ed6cb537fd7f148714c7ade4e360..c4b28340d62a89d6f896357c93fd933fe6cd934b 100644
+index c2c2c24a593f67abc1eec4a20ced1ec0b5fa8cad..b3de20af553414369784b17139dd9185cc715db2 100644
 --- a/src/main/java/net/minecraft/world/entity/Mob.java
 +++ b/src/main/java/net/minecraft/world/entity/Mob.java
-@@ -110,6 +110,7 @@ public abstract class Mob extends LivingEntity {
+@@ -109,6 +109,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
      private final BodyRotationControl bodyRotationControl;
      protected PathNavigation navigation;
      public GoalSelector goalSelector;
@@ -16,7 +16,7 @@ index 10949455cc92ed6cb537fd7f148714c7ade4e360..c4b28340d62a89d6f896357c93fd933f
      public GoalSelector targetSelector;
      @Nullable
      private LivingEntity target;
-@@ -836,7 +837,17 @@ public abstract class Mob extends LivingEntity {
+@@ -868,7 +869,17 @@ public abstract class Mob extends LivingEntity implements Targeting {
      @Override
      protected final void serverAiStep() {
          ++this.noActionTime;
@@ -27,14 +27,14 @@ index 10949455cc92ed6cb537fd7f148714c7ade4e360..c4b28340d62a89d6f896357c93fd933f
 +                this.getJumpControl().tick();
 +            }
 +            if (this.isSensitiveToWater() && isInWaterRainOrBubble()) {
-+                hurt(DamageSource.DROWN, 1.0F);
++                hurt(this.damageSources().drown(), 1.0F);
 +            }
 +            return;
 +        }
 +        // Paper end
-         this.level.getProfiler().push("sensing");
+         this.level().getProfiler().push("sensing");
          this.sensing.tick();
-         this.level.getProfiler().pop();
+         this.level().getProfiler().pop();
 diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/FloatGoal.java b/src/main/java/net/minecraft/world/entity/ai/goal/FloatGoal.java
 index 01950951ea06e43bedeeede489a112e577617829..7093c62be53fe99ed9880fc8ddaa07440fe4f715 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/goal/FloatGoal.java

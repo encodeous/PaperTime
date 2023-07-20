@@ -11,10 +11,10 @@ For people who want all chunks to be treated equally, you can chose a fixed valu
 This allows to fine-tune vanilla gameplay.
 
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-index 2efeccb33d1d5fb148a12f71eae870fbdcb6e0fd..b4c76e53eef8dc0efec98848352a243931ffc1f3 100644
+index 72637bb342f1260debf925f5b3fde8ec7dd3cfff..704f0500649acdbff2caf94f702a6685ecf4c986 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-@@ -327,6 +327,13 @@ public class LevelChunk extends ChunkAccess {
+@@ -280,6 +280,13 @@ public class LevelChunk extends ChunkAccess {
          return new ChunkAccess.TicksToSave(this.blockTicks, this.fluidTicks);
      }
  

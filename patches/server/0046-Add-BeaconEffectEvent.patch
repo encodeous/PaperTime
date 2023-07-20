@@ -5,7 +5,7 @@ Subject: [PATCH] Add BeaconEffectEvent
 
 
 diff --git a/src/main/java/net/minecraft/world/level/block/entity/BeaconBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
-index e1a720afaf9f3d843065ed1e8e4ce71019a0fea2..3a17c143de499d81109ae7d6e9fe18718139c5b7 100644
+index ff49285fe50e8361c2d4529bf1dda5b54a90e3fe..8b79df496e1fad57e8c5c0aa97d0d84ab0deed1e 100644
 --- a/src/main/java/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
 +++ b/src/main/java/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
 @@ -41,6 +41,10 @@ import net.minecraft.world.phys.AABB;
@@ -31,7 +31,7 @@ index e1a720afaf9f3d843065ed1e8e4ce71019a0fea2..3a17c143de499d81109ae7d6e9fe1871
  
              Player entityhuman;
 +            // Paper start - BeaconEffectEvent
-+            org.bukkit.block.Block block = ((Player) list.get(0)).level.getWorld().getBlockAt(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
++            org.bukkit.block.Block block = ((Player) list.get(0)).level().getWorld().getBlockAt(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
 +            PotionEffect effect = CraftPotionUtil.toBukkit(new MobEffectInstance(effects, i, b0, true, true));
 +            // Paper end
  

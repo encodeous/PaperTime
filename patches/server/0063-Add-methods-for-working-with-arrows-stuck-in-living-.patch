@@ -7,10 +7,10 @@ Upstream added methods for this, original methods are now
 deprecated
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-index c2407224e8bc5e872e153de14090d60e66bb07bc..3fae28c52f2aac63ac6a4e8eb6af2d7226e6bec6 100644
+index 27830b5909660038a51ef7fc4ca78d9df64f562a..96095cc107d161cad7401725eb70f08203deac9a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-@@ -266,9 +266,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+@@ -267,9 +267,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
      }
  
      @Override
@@ -27,7 +27,7 @@ index c2407224e8bc5e872e153de14090d60e66bb07bc..3fae28c52f2aac63ac6a4e8eb6af2d72
      }
  
      @Override
-@@ -764,4 +770,16 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+@@ -788,4 +794,16 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
          this.getHandle().persistentInvisibility = invisible;
          this.getHandle().setSharedFlag(5, invisible);
      }

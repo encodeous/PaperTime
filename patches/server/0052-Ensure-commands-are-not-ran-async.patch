@@ -21,10 +21,10 @@ character.
 Co-authored-by: Jake Potrebic <jake.m.potrebic@gmail.com>
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 8ef64f5192500f87f514c42432c0d5c8361145a7..f9f18e263d29421bdc83993a6fd55f47cb7ab926 100644
+index 142ffdf61b8f69e9d948b75a424de97ee31e1a87..bd6b4a13b18bd13a6024c92a247503a87102e7c5 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -2040,7 +2040,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+@@ -2044,7 +2044,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          return true;
      }
  
@@ -33,7 +33,7 @@ index 8ef64f5192500f87f514c42432c0d5c8361145a7..f9f18e263d29421bdc83993a6fd55f47
          for (int i = 0; i < message.length(); ++i) {
              if (!SharedConstants.isAllowedChatCharacter(message.charAt(i))) {
                  return true;
-@@ -2057,7 +2057,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+@@ -2061,7 +2061,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          }
          OutgoingChatMessage outgoing = OutgoingChatMessage.create(original);
  
@@ -42,7 +42,7 @@ index 8ef64f5192500f87f514c42432c0d5c8361145a7..f9f18e263d29421bdc83993a6fd55f47
              this.handleCommand(s);
          } else if (this.player.getChatVisibility() == ChatVisiblity.SYSTEM) {
              // Do nothing, this is coming from a plugin
-@@ -2147,7 +2147,29 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+@@ -2151,7 +2151,29 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          }
      }
  
@@ -74,11 +74,11 @@ index 8ef64f5192500f87f514c42432c0d5c8361145a7..f9f18e263d29421bdc83993a6fd55f47
          if ( org.spigotmc.SpigotConfig.logCommands ) // Spigot
          this.LOGGER.info(this.player.getScoreboardName() + " issued server command: " + s);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index babde3ac7af9b5659bcc7e0298d1d77e7b2d60e2..369657f5c54dae7b03b09aec1c672dc3f2cba090 100644
+index 68692c36a0db6ac3048dcfac91c154974e5e917f..06bb2fd95dd0193101f8ee4e9082df0c079a3dd7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -857,6 +857,28 @@ public final class CraftServer implements Server {
-         Validate.notNull(commandLine, "CommandLine cannot be null");
+@@ -885,6 +885,28 @@ public final class CraftServer implements Server {
+         Preconditions.checkArgument(commandLine != null, "commandLine cannot be null");
          org.spigotmc.AsyncCatcher.catchOp("command dispatch"); // Spigot
  
 +        // Paper Start
@@ -107,17 +107,17 @@ index babde3ac7af9b5659bcc7e0298d1d77e7b2d60e2..369657f5c54dae7b03b09aec1c672dc3
              return true;
          }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 63e01d1380135072735444724a9b060be364cec4..b3fc0f67715707bf4ad6ff88fbf8dab1c830d74b 100644
+index 705734e2f26f8deab8ac9ad929d7b5e29181ace3..d96e0bb4277d83602d4062dc33e6e420a28bf2da 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -504,7 +504,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-     public void chat(String msg) {
+@@ -490,7 +490,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
          if (this.getHandle().connection == null) return;
  
 -        this.getHandle().connection.chat(msg, PlayerChatMessage.system(msg), false);
 +        // Paper start - improve chat handling
 +        if (ServerGamePacketListenerImpl.isChatMessageIllegal(msg)) {
-+            this.getHandle().connection.disconnect(Component.translatable("multiplayer.disconnect.illegal_characters"), org.bukkit.event.player.PlayerKickEvent.Cause.ILLEGAL_CHARACTERS);
++            this.getHandle().connection.disconnect(Component.translatable("multiplayer.disconnect.illegal_characters"));
 +        } else {
 +            if (msg.startsWith("/")) {
 +                this.getHandle().connection.handleCommand(msg);

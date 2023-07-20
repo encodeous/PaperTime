@@ -5,10 +5,10 @@ Subject: [PATCH] Entity Origin API
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index bdcf5219ff1e4d4c0dc8a3423bc17b453b779473..a4dfac73b8510f0dddd65751b8430be1abdabbdd 100644
+index 598abaa82c634178043a29f6caa6ac5221659d06..70a32f89c16439c575d8928332cfed64d1d6ab7e 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -698,5 +698,15 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -725,5 +725,15 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
      default net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowEntity> asHoverEvent(final @NotNull java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowEntity> op) {
          return net.kyori.adventure.text.event.HoverEvent.showEntity(op.apply(net.kyori.adventure.text.event.HoverEvent.ShowEntity.of(this.getType().getKey(), this.getUniqueId(), this.customName())));
      }
@@ -25,15 +25,15 @@ index bdcf5219ff1e4d4c0dc8a3423bc17b453b779473..a4dfac73b8510f0dddd65751b8430be1
      // Paper end
  }
 diff --git a/src/main/java/org/bukkit/entity/FallingBlock.java b/src/main/java/org/bukkit/entity/FallingBlock.java
-index 64f9d3fd870d65afd2ee9a85625b149163eee144..14cb0d770561151570ab4399ca5facff43076819 100644
+index d96fd494b523491fcf1ac54d164351fd487f65d6..ae1ce2ee2deb82f3f4144ec54b3ba119b437c5e9 100644
 --- a/src/main/java/org/bukkit/entity/FallingBlock.java
 +++ b/src/main/java/org/bukkit/entity/FallingBlock.java
-@@ -54,4 +54,15 @@ public interface FallingBlock extends Entity {
-      * @param hurtEntities whether entities will be damaged by this block.
+@@ -126,4 +126,15 @@ public interface FallingBlock extends Entity {
+      * @param damage the max damage to set. Must be >= 0
       */
-     void setHurtEntities(boolean hurtEntities);
+     void setMaxDamage(int damage);
 +
-+    /**
++     /**
 +     * Gets the source block location of the FallingBlock
 +     *
 +     * @return the source block location the FallingBlock was spawned from
