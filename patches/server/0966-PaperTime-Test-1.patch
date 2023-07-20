@@ -1,0 +1,165 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Adam Chen <encodeous7@gmail.com>
+Date: Mon, 13 Mar 2023 18:07:16 -0400
+Subject: [PATCH] PaperTime Test 1
+
+
+diff --git a/src/main/java/io/papermc/paper/command/StpsCommand.java b/src/main/java/io/papermc/paper/command/StpsCommand.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..aa1358377334e76ce6bf8e30995540e1a3335524
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/command/StpsCommand.java
+@@ -0,0 +1,88 @@
++package io.papermc.paper.command;
++
++import net.kyori.adventure.text.Component;
++import net.minecraft.server.MinecraftServer;
++import org.bukkit.Location;
++import org.bukkit.command.Command;
++import org.bukkit.command.CommandSender;
++import org.checkerframework.checker.nullness.qual.NonNull;
++import org.checkerframework.framework.qual.DefaultQualifier;
++
++import java.text.DecimalFormat;
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.Collections;
++import java.util.List;
++
++import static net.kyori.adventure.text.Component.text;
++import static net.kyori.adventure.text.format.NamedTextColor.*;
++
++@DefaultQualifier(NonNull.class)
++public final class StpsCommand extends Command {
++    private static final DecimalFormat DF = new DecimalFormat("########0.0");
++    private static final Component SLASH = text("/");
++
++    public StpsCommand(final String name) {
++        super(name);
++        this.description = "Set the speed at which the server runs";
++        this.usageMessage = "/stps";
++        this.setPermission("bukkit.command.stps");
++    }
++
++    @Override
++    public List<String> tabComplete(CommandSender sender, String alias, String[] args, Location location) throws IllegalArgumentException {
++        return Collections.emptyList();
++    }
++
++    @Override
++    public boolean execute(CommandSender sender, String commandLabel, String[] args) {
++        if (!testPermission(sender)) return true;
++
++        try{
++            if(args.length != 1 || Double.isNaN(Double.parseDouble(args[0]))){
++                sender.sendMessage("Expected 1 double argument for TPS");
++                return true;
++            }
++        }catch (Exception e){
++            sender.sendMessage("Expected 1 double argument for TPS");
++            return true;
++        }
++
++        double ntps = Double.parseDouble(args[0]);
++
++        if(ntps == 0) ntps = 0.000000000001;
++
++        if(ntps < 0){
++            sender.sendMessage("TPS cannot be less than 0.");
++            return true;
++        }
++
++        MinecraftServer.setMspt((int) (1000/ntps));
++        MinecraftServer server = MinecraftServer.getServer();
++        if(MinecraftServer.TICK_TIME < server.tickTimes60s.getAverage()){
++            sender.sendMessage("Warning: The server may not be able to keep up with the specified TPS. The current estimate of the maximal tps is: " + (1000/server.tickTimes60s.getAverage()));
++        }
++
++        sender.sendMessage("TPS set to: " + MinecraftServer.TPS);
++        return true;
++    }
++
++    private static List<Component> eval(long[] times) {
++        long min = Integer.MAX_VALUE;
++        long max = 0L;
++        long total = 0L;
++        for (long value : times) {
++            if (value > 0L && value < min) min = value;
++            if (value > max) max = value;
++            total += value;
++        }
++        double avgD = ((double) total / (double) times.length) * 1.0E-6D;
++        double minD = ((double) min) * 1.0E-6D;
++        double maxD = ((double) max) * 1.0E-6D;
++        return Arrays.asList(getColor(avgD), getColor(minD), getColor(maxD));
++    }
++
++    private static Component getColor(double avg) {
++        return text(DF.format(avg), avg >= 50 ? RED : avg >= 40 ? YELLOW : GREEN);
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 753a917d34a1e1c1521a8916bc8e44a6acd90a46..6fecd33dcb586e866386ed37cfdc93532c59d8e9 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -196,6 +196,16 @@ import co.aikar.timings.MinecraftTimings; // Paper
+ 
+ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements CommandSource, AutoCloseable {
+ 
++    // PaperTime Start
++    public static int ADJ_MS_PER_TICK = 50;
++    public static int TPS = 20;
++    public static int TICK_TIME = 1000000000 / MinecraftServer.TPS;
++    public static void setMspt(int mspt){
++        if(mspt <= 0) mspt = 1;
++        ADJ_MS_PER_TICK = mspt;
++        TICK_TIME = mspt * 1000000;
++        TPS = 1000 / mspt;
++    }
+     private static MinecraftServer SERVER; // Paper
+     public static final Logger LOGGER = LogUtils.getLogger();
+     public static final String VANILLA_BRAND = "vanilla";
+@@ -298,8 +308,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     public boolean forceTicks; // Paper
+     // CraftBukkit end
+     // Spigot start
+-    public static final int TPS = 20;
+-    public static final int TICK_TIME = 1000000000 / MinecraftServer.TPS;
+     private static final int SAMPLE_INTERVAL = 20; // Paper
+     public final double[] recentTps = new double[ 3 ];
+     // Spigot end
+@@ -1132,14 +1140,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+                     throw this.chunkSystemCrash;
+                 }
+                 // Paper end - rewrite chunk system
++
++                // VVV ms behind
+                 long i = ((curTime = System.nanoTime()) / (1000L * 1000L)) - this.nextTickTime; // Paper
+ 
+                 if (i > 5000L && this.nextTickTime - this.lastOverloadWarning >= 30000L) { // CraftBukkit
+-                    long j = i / 50L;
++                    long j = i / ADJ_MS_PER_TICK;
+ 
+                     if (this.server.getWarnOnOverload()) // CraftBukkit
+                     MinecraftServer.LOGGER.warn("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", i, j);
+-                    this.nextTickTime += j * 50L;
++                    this.nextTickTime += j * ADJ_MS_PER_TICK;
+                     this.lastOverloadWarning = this.nextTickTime;
+                 }
+ 
+@@ -1167,13 +1177,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+ 
+                 //MinecraftServer.currentTick = (int) (System.currentTimeMillis() / 50); // CraftBukkit // Paper - don't overwrite current tick time
+                 lastTick = curTime;
+-                this.nextTickTime += 50L;
++                this.nextTickTime += ADJ_MS_PER_TICK;
+                 this.startMetricsRecordingTick();
+                 this.profiler.push("tick");
+                 this.tickServer(this::haveTime);
+                 this.profiler.popPush("nextTickWait");
+                 this.mayHaveDelayedTasks = true;
+-                this.delayedTasksMaxNextTickTime = Math.max(Util.getMillis() + 50L, this.nextTickTime);
++                this.delayedTasksMaxNextTickTime = Math.max(Util.getMillis() + ADJ_MS_PER_TICK, this.nextTickTime);
+                 this.waitUntilNextTick();
+                 this.profiler.pop();
+                 this.endMetricsRecordingTick();
